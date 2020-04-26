@@ -13,9 +13,9 @@ public class PaymentDemo {
 
 	// 钱包地址
 	private static String account = "";
-//	// 钱包秘钥
+	// 钱包秘钥
 	private static String secret = "";
-//	// 收款地址
+	// 收款地址
 	private static String to = "";
 
 	public static void main(String[] args) throws Exception {
@@ -31,8 +31,6 @@ public class PaymentDemo {
 		// 设置发行方钱包地址
 		// 对于swt为""
 		amount.setIssuer("");
-		// 对于swt为true, 其他为false
-		amount.setIsNative(true);
 		// 构建转账交易
 		Transaction tx = remote.buildPaymentTx(account, to, amount);
 		ArrayList<String> memo = new ArrayList<>();
