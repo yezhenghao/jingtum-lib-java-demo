@@ -14,16 +14,17 @@ import com.jccdex.rpc.base.JCallback;
 import com.jccdex.rpc.url.JccdexUrl;
 
 /**
- * 通过rpc节点发起http请求，本地签名后提交转账交易
- * 本地签名需要先获取sequence
+ * 通过rpc节点发起http请求，本地签名后提交转账交易 本地签名需要先获取sequence
  * 
  * 正式链的rpc节点可通过https://gateway.swtc.top/rpcservice获取
+ * 
+ * jcc_rpc_java需升级到最新版本，见https://jitpack.io/#JCCDex/jcc_rpc_java/v2.7
  * 
  * @author GinMu
  *
  */
 public class PaymentWithNodeRpcDemo {
-	
+
 	public static void main(String[] args) throws Exception {
 
 		String account = "";
@@ -32,10 +33,10 @@ public class PaymentWithNodeRpcDemo {
 		String value = "0.01";
 		String token = "CNY";
 		String issuer = "jGa9J9TkqtBcUoHe2zqhVFFbgUVED6o9or";
-		// token不为swt时，需要issuer
-		Amount amount = new Amount(new BigDecimal(value), token, issuer);
-		
-		// token为swt时, 不需要issuer
+		// token不为swt时，需要issuer和token名称
+		Amount amount = new Amount(new BigDecimal(value), token.toUpperCase(), issuer);
+
+		// token为swt时, 不需要issuer和token名称
 		// Amount amount = new Amount(new BigDecimal(1));
 		Payment payment = new Payment();
 		payment.as(AccountID.Account, account);
@@ -48,7 +49,7 @@ public class PaymentWithNodeRpcDemo {
 		JccdexUrl jccUrl = new JccdexUrl("39.104.188.146", false, 50333);
 		JccdexNodeRpc nodeRpc = JccdexNodeRpc.getInstance();
 		nodeRpc.setmBaseUrl(jccUrl);
-		
+
 		nodeRpc.requestSequence(account, new JCallback() {
 
 			@Override
