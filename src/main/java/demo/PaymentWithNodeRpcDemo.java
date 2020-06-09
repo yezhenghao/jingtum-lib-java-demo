@@ -18,7 +18,9 @@ import com.jccdex.rpc.url.JccdexUrl;
  * 
  * 正式链的rpc节点可通过https://gateway.swtc.top/rpcservice获取
  * 
- * jcc_rpc_java需升级到最新版本，见https://jitpack.io/#JCCDex/jcc_rpc_java/v2.7
+ * jcc_rpc_java需升级到最新版本，见https://jitpack.io/#JCCDex/jcc_rpc_java/v2.8
+ * 
+ * 
  * 
  * @author GinMu
  *
@@ -46,6 +48,7 @@ public class PaymentWithNodeRpcDemo {
 		payment.flags(new UInt32(0));
 
 		// 正式链的rpc节点可通过https://gateway.swtc.top/rpcservice获取
+		// 建议节点定期更新，防止因为节点变更导致不可用
 		JccdexUrl jccUrl = new JccdexUrl("39.104.188.146", false, 50333);
 		JccdexNodeRpc nodeRpc = JccdexNodeRpc.getInstance();
 		nodeRpc.setmBaseUrl(jccUrl);
@@ -61,41 +64,72 @@ public class PaymentWithNodeRpcDemo {
 					int sequence = JSONObject.parseObject(response).getJSONObject("result")
 							.getJSONObject("account_data").getIntValue("Sequence");
 					payment.sequence(new UInt32(sequence));
-
-					SignedTransaction tx = payment.sign(secret);
+					SignedTransaction tx = null;
+					try {
+					  tx = payment.sign(secret);
+					} catch (Exception e) {
+						// 签名异常
+						// 根据实际情况做下一步操作
+						return;
+					}
 
 					// 交易hash, 和最后上链的hash一致。
 					Hash256 hash = tx.hash;
 					String blob = tx.tx_blob;
 
 					System.out.println("交易blob: " + tx.tx_blob);
-					System.out.println("交易hash: " + hash);
+					System.out.println("交易hash: " + hash.toHex());
 
 					nodeRpc.transfer(blob, new JCallback() {
-
-						// code说明见http://developer.jingtum.com/error_code.html
-						// 一般情况下code为tesSUCCESS， 就表示交易成功
-						// 但是也存在在tesSUCCESS情况下，实际没有成功上链的情况，最好提交交易过后，根据hash做二次验证
-						// 可根据浏览器API查询交易详情：https://github.com/JCCDex/JingChang-Document/blob/master/zh-CN/Jingchang-Explorer-Server.md#3-%E6%A0%B9%E6%8D%AE%E5%93%88%E5%B8%8C%E6%9F%A5%E8%AF%A2%E4%BA%A4%E6%98%93%E8%AF%A6%E7%BB%86
 						@Override
 						public void onResponse(String code, String response) {
 							System.out.println(code);
 							System.out.println(response);
+							// code说明见http://developer.jingtum.com/error_code.html
+							// 一般情况下code为tesSUCCESS， 就表示交易成功
+							// 但是也存在在tesSUCCESS情况下，实际没有成功上链的情况，最好提交交易过后，根据hash做二次验证
+							// 节点每10s出块，建议异步验证交易详情，时间间隔建议最少10s之后
+							// 根据业务需求决定是否做二次验证
+							nodeRpc.requestTx(hash.toHex(), new JCallback() {
+								
+								@Override
+								public void onResponse(String code, String res) {
+									if (code.equals("success")) {
+										// transactionResult说明见http://developer.jingtum.com/error_code.html
+										String transactionResult = JSONObject.parseObject(res).getJSONObject("result").getJSONObject("meta").getString("TransactionResult");
+										if (transactionResult.equals("tesSUCCESS")) {
+											// 上链验证成功
+										} else {
+											// 上链验证失败，根据业务需求做下一步操作
+										}
+									} else {
+										// 上链验证失败，根据业务需求做下一步操作
+									}
+								}
+								
+								@Override
+								public void onFail(Exception arg0) {
+									// 异常状态，根据业务需求做下一步操作
+								}
+							});
 						}
 
 						@Override
 						public void onFail(Exception e) {
-
+							// 异常状态，根据业务需求做下一步操作
 						}
 					});
 
 				} else {
 					// 获取sequence失败
+					// 根据业务需求做下一步操作
 				}
 			}
 
 			@Override
 			public void onFail(Exception e) {
+				// 异常状态，根据业务需求做下一步操作
+
 			}
 		});
 	}
