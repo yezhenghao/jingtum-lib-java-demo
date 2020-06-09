@@ -117,19 +117,20 @@ public class PaymentWithNodeRpcDemo {
 						@Override
 						public void onFail(Exception e) {
 							// 异常状态，根据业务需求做下一步操作
+							// 建议10秒之后重新调用transfer发送交易上链
 						}
 					});
 
 				} else {
 					// 获取sequence失败
-					// 根据业务需求做下一步操作
+					// 根据业务需求做下一步操作，建议10秒之后重新调用requestSequence获取sequence
 				}
 			}
 
 			@Override
 			public void onFail(Exception e) {
 				// 异常状态，根据业务需求做下一步操作
-
+				// 建议10秒之后重新调用requestSequence获取sequence
 			}
 		});
 	}
