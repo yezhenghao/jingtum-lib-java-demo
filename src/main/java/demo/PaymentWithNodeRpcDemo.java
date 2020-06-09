@@ -69,7 +69,7 @@ public class PaymentWithNodeRpcDemo {
 					  tx = payment.sign(secret);
 					} catch (Exception e) {
 						// 签名异常
-						// 根据实际情况做下一步操作
+						// 根据实际需求做下一步操作
 						return;
 					}
 
